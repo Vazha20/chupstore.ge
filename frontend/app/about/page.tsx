@@ -41,7 +41,7 @@ export default function About() {
         <div className={`${styles.section} ${styles.reverse}`}>
           <div className={styles.imageBox}>
             <img
-              src="/bgabout.png"
+              src="bgabout.png"
               alt="ჩვენი მიზანი"
               width={500}
               height={400}
