@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import styles from './Login.module.css';
 
 interface LoginProps {
@@ -22,31 +23,47 @@ export default function Login({ onClose }: LoginProps) {
       setError('');
       setSuccess('');
 
+      // 🔹 რეგისტრაციის ვალიდაცია
+      if (isRegister) {
+        if (!username || !email || !password) {
+          setError('გთხოვთ შეავსოთ ყველა ველი');
+          return;
+        }
+
+        // 🔹 პაროლის ძლიერი ვალიდაცია მხოლოდ რეგისტრაციაზე
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordPattern.test(password)) {
+          setError('პაროლი უნდა შეიცავდეს მინიმუმ 1 დიდ ასოს, 1 პატარა ასოს, 1 ციფრს და იყოს მინ. 8 სიმბოლო');
+          return;
+        }
+      } else {
+        // 🔹 Login ვალიდაცია — მხოლოდ ველები შეივსოს
+        if (!email || !password) {
+          setError('გთხოვთ შეავსოთ ყველა ველი');
+          return;
+        }
+      }
+
       try {
-        // Simple local validation
         if (isRegister) {
-          if (!username || !email || !password) {
-            setError('გთხოვთ შეავსოთ ყველა ველი');
-            return;
-          }
-
-          setSuccess('რეგისტრაცია წარმატებით დასრულდა!');
-          setTimeout(() => {
-            onClose();
-          }, 2000);
+          const res = await axios.post('http://localhost:3001/auth/register', {
+            email,
+            password,
+            username,
+          });
+          setSuccess(res.data.message);
+          setTimeout(() => onClose(), 2000);
         } else {
-          if (!email || !password) {
-            setError('გთხოვთ შეავსოთ ყველა ველი');
-            return;
-          }
-
-          setSuccess('შესვლა წარმატებით შესრულდა!');
-          setTimeout(() => {
-            onClose();
-          }, 1000);
+          const res = await axios.post('http://localhost:3001/auth/login', {
+            email,
+            password,
+          });
+          localStorage.setItem('token', res.data.token);
+          setSuccess(res.data.message || 'შესვლა წარმატებით შესრულდა!');
+          setTimeout(() => onClose(), 1000);
         }
       } catch (err: any) {
-        setError('შეცდომა მოხდა, სცადეთ თავიდან');
+        setError(err.response?.data?.message || 'შეცდომა მოხდა, სცადეთ თავიდან');
       }
     },
     [isRegister, username, email, password, onClose]
@@ -60,14 +77,13 @@ export default function Login({ onClose }: LoginProps) {
           <CloseOutlined onClick={onClose} className={styles.closeIcon} />
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
           {isRegister && (
             <input
               type="text"
               placeholder="მომხმარებლის სახელი"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
               autoComplete="off"
             />
           )}
@@ -76,7 +92,6 @@ export default function Login({ onClose }: LoginProps) {
             placeholder="ელ. ფოსტა"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             autoComplete="off"
           />
           <input
@@ -84,7 +99,6 @@ export default function Login({ onClose }: LoginProps) {
             placeholder="პაროლი"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
             autoComplete="off"
           />
           <button type="submit">{isRegister ? 'რეგისტრაცია' : 'შესვლა'}</button>
