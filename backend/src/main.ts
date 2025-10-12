@@ -7,7 +7,7 @@ async function bootstrap() {
 
   // ✅ CORS პარამეტრები (ფრონტი localhost:3000-ზე)
   const corsOptions: CorsOptions = {
-    origin: 'https://chusptore.vercel.app',
+    origin: 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,

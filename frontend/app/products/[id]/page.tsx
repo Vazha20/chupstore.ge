@@ -27,7 +27,7 @@ export default function ProductDetailsPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`https://chusptoreback.vercel.app/api/products/${id}`)
+    fetch(`http://localhost:3001/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
         // დარწმუნებული ვხდეთ, რომ images და sizes არის ცარიელი თუ არ არის
