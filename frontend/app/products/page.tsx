@@ -23,7 +23,7 @@ export default function ProductsPage() {
   const productsPerPage = 9;
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/products")
+    fetch("https://chusptoreback.vercel.app/api/products")
       .then((res) => res.json())
       .then((data: Product[]) => {
         setProducts(data);
