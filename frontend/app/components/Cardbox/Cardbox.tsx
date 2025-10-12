@@ -6,7 +6,7 @@ import { AppstoreOutlined } from "@ant-design/icons";
 import styles from "./Cardbox.module.css";
 
 const categories = [
-  { id: 1, name: "ყველა კატეგორია", dark: true, icon: <AppstoreOutlined style={{ fontSize: 28 }} /> },
+  { id: 1, href: "/products", name: "ყველა კატეგორია", dark: true, icon: <AppstoreOutlined style={{ fontSize: 28 }} /> },
   { id: 2, name: "ორეული", image: "/shirt.png" },
   { id: 3, name: "კაბა", image: "/shirt.png" },
   { id: 4, name: "შარვალი", image: "/shirt.png" },
