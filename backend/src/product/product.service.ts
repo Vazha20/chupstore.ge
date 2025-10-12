@@ -1,30 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Product } from './product.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductService {
-  constructor(
-    @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
-  ) {}
+  constructor(@InjectRepository(Product) private repo: Repository<Product>) {}
 
-  // დაბრუნება Product[] ყოველთვის, find შეიძლება array იყოს
   findAll(category?: string): Promise<Product[]> {
-    if (category) {
-      return this.productRepo.find({ where: { category } });
+    if (category && category !== "ყველა") {
+      return this.repo.find({ where: { category } });
     }
-    return this.productRepo.find();
+    return this.repo.find();
   }
 
-  // findOne ახლა შეიძლება იყოს undefined, ამიტომ Promise<Product | null>
-  async findOne(id: number): Promise<Product | null> {
-    return await this.productRepo.findOne({ where: { id } });
+  findOne(id: number): Promise<Product | null> {
+    return this.repo.findOne({ where: { id } });
   }
 
   create(data: Partial<Product>): Promise<Product> {
-    const product = this.productRepo.create(data);
-    return this.productRepo.save(product);
+    const product = this.repo.create(data);
+    return this.repo.save(product);
+  }
+
+  async update(id: number, data: Partial<Product>): Promise<Product | null> {
+    const product = await this.findOne(id);
+    if (!product) return null;
+    Object.assign(product, data);
+    return this.repo.save(product);
+  }
+
+  async remove(id: number): Promise<boolean> {
+    const product = await this.findOne(id);
+    if (!product) return false;
+    await this.repo.remove(product);
+    return true;
   }
 }

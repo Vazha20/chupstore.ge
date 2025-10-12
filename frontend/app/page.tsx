@@ -2,12 +2,15 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import Categoryslider from "./components/Categotyslider/Categoryslider";
 import Cardbox from "./components/Cardbox/Cardbox";
+import Anchor from "./components/Anchor/Anchor";
+
 
 export default function Home() {
   return (
     <>
     <Categoryslider />
     <Cardbox />
+    <Anchor />
     </>
   );
 } 

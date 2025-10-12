@@ -2,42 +2,27 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  Row,
-  Col,
-  Image,
-  Typography,
-  Card,
-  Space,
-  Tag,
-  Button,
-  Radio,
-} from "antd";
-import {
-  ShoppingCartOutlined,
-  CreditCardOutlined,
-} from "@ant-design/icons";
+import { Row, Col, Image, Typography, Card, Button, Space, Tag, Carousel, Radio } from "antd";
+import { ShoppingCartOutlined, CreditCardOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import './page.css';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 
 interface Product {
   id: number;
   name: string;
   description: string;
   price: number;
-  image?: string;
+  images: string[];
   category: string;
+  sizes: string[];
 }
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // main image state
-  const [mainImage, setMainImage] = useState<string | undefined>(undefined);
-
-  // selected size
+  const [carouselRef, setCarouselRef] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState<string>("M");
 
   useEffect(() => {
@@ -45,223 +30,137 @@ export default function ProductDetailsPage() {
     fetch(`http://localhost:3001/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        setProduct(data);
-        setMainImage(data.image);
+        // დარწმუნებული ვხდეთ, რომ images და sizes არის ცარიელი თუ არ არის
+        setProduct({
+          ...data,
+          images: data.images?.length ? data.images : [data.image || "/aaaa.jpeg"],
+          sizes: data.sizes?.length ? data.sizes : ["S", "M", "L"],
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading)
-    return <p style={{ textAlign: "center", padding: 40 }}>იტვირთება...</p>;
-  if (!product)
-    return <p style={{ textAlign: "center", padding: 40 }}>პროდუქტი ვერ მოიძებნა</p>;
+  if (loading) return <div style={{ padding: "40px" }}>იტვირთება...</div>;
+  if (!product) return <div style={{ padding: "40px" }}>პროდუქტი ვერ მოიძებნა</div>;
 
   return (
-    <div
-      style={{
-        background: "#fafafa",
-        minHeight: "50vh",
-        padding: "40px 30px",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-      <Card
-        style={{
-          maxWidth: 1260,
-          width: "100%",
-          borderRadius: 16,
-          border: "none",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-        }}
-        bodyStyle={{ padding: "40px 24px" }}
-      >
-        <Row gutter={[32, 32]} align="top">
-          {/* LEFT: Image gallery */}
-          <Col xs={24} sm={24} md={12} lg={12}>
-            <div style={{ textAlign: "center" }}>
-              {mainImage ? (
-                <Image
-                  src={mainImage}
-                  alt={product.name}
-                  style={{
-                    borderRadius: 12,
-                    objectFit: "cover",
-                    maxHeight: 520,
-                    width: "100%",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    height: 520,
-                    background: "#f2f2f2",
-                    borderRadius: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#999",
-                    fontSize: 16,
-                  }}
-                >
-                  ფოტო არ არის
-                </div>
-              )}
-{/* Thumbnails */}
-<div
-  style={{
-    marginTop: 20,
-    display: "flex",
-    justifyContent: "center", // პირველი ფოტო მარცხენა კიდიდან
-    gap: 12,
-    overflowX: "auto",  // სქროლვადი
-    paddingBottom: 4,
-    paddingLeft: 0,     // optional, შეგიძლიათ ცოტა პადინგი სურათებისთვის
-  }}
->
-  {[1, 2, 3, 4].map((n) => (
-    <div
-      key={n}
-      style={{
-        flex: "0 0 auto", // არ იჭიმება, ერთ ხაზში რჩება
-      }}
-    >
-      <Image
-        src={product.image} // ან product.images[n] თუ გაქვს მასივი
-        alt={`thumbnail-${n}`}
-        width={90}
-        height={90}
-        style={{
-          objectFit: "cover",
-          borderRadius: 8,
-          cursor: "pointer",
-          border:
-            mainImage === product.image ? "2px solid #000" : "1px solid #f0f0f0",
-          boxShadow:
-            mainImage === product.image
-              ? "0 0 4px rgba(0,0,0,0.2)"
-              : "none",
-          transition: "all 0.3s ease",
-        }}
-        onClick={() => setMainImage(product.image)}
-        preview={false}
-      />
-    </div>
-  ))}
-</div>
+    <div style={{ maxWidth: 1320, padding: "40px 30px", margin: "0 auto" }}>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} md={12}>
+          <Card>
+            <div style={{ position: "relative" }}>
+              <Carousel ref={setCarouselRef} dots={false} autoplay={false}>
+                {product.images.map((img, idx) => (
+                  <Image
+                    key={idx}
+                    src={img}
+                    alt={product.name}
+                    style={{ width: "100%", maxHeight: 200, objectFit: "cover" }}
+                  />
+                ))}
+              </Carousel>
 
-
-
-
-            </div>
-          </Col>
-
-          {/* RIGHT: Product info */}
-          <Col xs={24} sm={24} md={12} lg={12}>
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <Title
-                level={2}
-                style={{ marginBottom: 0, fontWeight: 600, color: "#222" }}
-              >
-                {product.name}
-              </Title>
-              <hr />
-              <Text strong style={{ fontSize: 26, color: "#111" }}>
-                {product.price} ₾
-              </Text>
-
-              <Paragraph style={{ color: "#555", lineHeight: 1.7, fontSize: 15 }}>
-                {product.description}
-              </Paragraph>
-
-              {/* Size selection */}
-              <div>
-                <Text style={{ fontSize: 15, fontWeight: 500, marginRight: 8 }}>
-                  ზომა:
-                </Text>
-                <Radio.Group
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
-                  size="large"
-                  style={{ marginTop: 10 }}
-                >
-                  {["S", "M", "L"].map((size) => (
-                    <Radio.Button
-                      key={size}
-                      value={size}
-                      style={{
-                        border: "1px solid #000",
-                        color: selectedSize === size ? "#fff" : "#000",
-                        backgroundColor: selectedSize === size ? "#000" : "#fff",
-                        borderRadius: "6px",
-                        marginRight: 4,
-                        fontWeight: 500,
-                        minWidth: 50,
-                        textAlign: "center",
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      {size}
-                    </Radio.Button>
-                  ))}
-                </Radio.Group>
-              </div>
-
-              {/* Buttons */}
-              <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
-                <Col xs={24} sm={12}>
-                  <Button
-                    type="primary"
-                    icon={<ShoppingCartOutlined />}
-                    block
-                    size="large"
-                    style={{
-                      borderRadius: 10,
-                      background: "#000",
-                      fontWeight: 500,
-                    }}
-                    onClick={() =>
-                      console.log(`დაემატა კალათაში (${selectedSize})`)
-                    }
-                  >
-                    კალათაში დამატება
-                  </Button>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Button
-                    icon={<CreditCardOutlined />}
-                    block
-                    size="large"
-                    style={{
-                      borderRadius: 10,
-                      borderColor: "#000",
-                      color: "#000",
-                      fontWeight: 500,
-                    }}
-                    onClick={() =>
-                      console.log(`ყიდვა ახლავე (${selectedSize})`)
-                    }
-                  >
-                    ყიდვა
-                  </Button>
-                </Col>
-              </Row>
-
-              <Tag
-                color="default"
+              <LeftOutlined
+                onClick={() => carouselRef.prev()}
                 style={{
-                  fontSize: 14,
-                  padding: "6px 12px",
-                  borderRadius: 8,
+                  position: "absolute",
+                  top: "50%",
+                  left: 0,
+                  fontSize: 24,
+                  color: "#fff",
+                  cursor: "pointer",
+                  transform: "translateY(-50%)",
+                  padding: 8,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  borderRadius: "50%",
                 }}
+              />
+              <RightOutlined
+                onClick={() => carouselRef.next()}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: 0,
+                  fontSize: 24,
+                  color: "#fff",
+                  cursor: "pointer",
+                  transform: "translateY(-50%)",
+                  padding: 8,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  borderRadius: "50%",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 16, gap: 10 }}>
+              {product.images.map((img, idx) => (
+                <Image
+                  key={idx}
+                  src={img}
+                  alt={`thumbnail-${idx}`}
+                  width={70}
+                  height={70}
+                  style={{ cursor: "pointer", objectFit: "cover", border: "2px solid #eee" }}
+                  onClick={() => carouselRef.goTo(idx)}
+                />
+              ))}
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12}>
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Title level={2}>{product.name}</Title>
+            <Title level={3} style={{ color: "#000000ff" }}>{product.price.toFixed(2)} ლ</Title>
+            <Paragraph>{product.description}</Paragraph>
+
+            {/* ზომების არჩევა */}
+            <div>
+              <strong>ზომა: </strong>
+              <Radio.Group
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                optionType="button"
+                buttonStyle="solid"
               >
-                კატეგორია: {product.category}
-              </Tag>
+                {product.sizes.map((size) => (
+                  <Radio.Button key={size} value={size} className="size-btn">
+                    {size}
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+            </div>
+
+            <Space>
+              <Button
+                style={{
+                  backgroundColor: "#000",
+                  color: "#fff",
+                  border: "none",
+                }}
+                icon={<ShoppingCartOutlined />}
+                size="large"
+              >
+                კალათაში დამატება
+              </Button>
+              <Button
+                style={{
+                  backgroundColor: "#ffffffff",
+                  color: "#000000ff",
+                  border: "1px solid black",
+                }}
+                type="default"
+                icon={<CreditCardOutlined />}
+                size="large"
+              >
+                ყიდვა
+              </Button>
             </Space>
-          </Col>
-        </Row>
-      </Card>
+            <Tag color="cyan">კატეგორია: {product.category}</Tag>
+          </Space>
+        </Col>
+      </Row>
     </div>
   );
 }
