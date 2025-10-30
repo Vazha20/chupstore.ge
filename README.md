@@ -1,1 +1,1 @@
-# chupstore.ge
+# project
